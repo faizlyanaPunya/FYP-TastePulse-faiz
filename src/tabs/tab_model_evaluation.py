@@ -22,7 +22,7 @@ def render(model_results):
                 st.image("faiz.jpeg", width=160)
         else:
             st.write("*(Pic)*")
-        st.info("**Name:** Nur Faizlyana Binti Mohd Kamarul Ariffin\n\n**Matric No:** 3000442 \n\n**Program:** Bachelor of Computer Science with hons.")
+        st.info("**Name:** Nur Faizlyana Binti Mohd Kamarul Ariffin\n\n**Matric No:** 300442 \n\n**Program:** Bachelor of Computer Science with hons.")
 
     with col2:
         st.markdown("#### 👨‍🏫 Supervisor")
