@@ -111,8 +111,11 @@ def render(model_results):
                 report_df = report_df[["precision", "recall", "f1-score", "support"]]
                 report_df.columns = ["Precision", "Recall", "F1-Score", "Support"]
                 
+                # Round to avoid Jinja2 dependency
+                report_df = report_df.round(3)
+                
                 st.markdown("#### Classification Report")
-                st.dataframe(report_df.style.format("{:.3f}"), use_container_width=True)
+                st.dataframe(report_df, use_container_width=True)
             
             # Label distribution
             dist_data = pd.DataFrame({

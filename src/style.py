@@ -4,394 +4,322 @@ def apply_theme():
     st.markdown(
         """
         <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     /* ============================================
-       GLOBAL STYLES & RESET
+       DESIGN TOKENS — Student Dashboard BI Style
+       Primary:    #1B3F5E  (dark navy-teal)
+       Accent 1:   #00838F  (teal)
+       Accent 2:   #C2185B  (pink/magenta)
+       BG:         #E8F4F8  (powder blue)
+       Card BG:    #FFFFFF
+       Border:     #B2D8E8  (soft blue border)
        ============================================ */
+
     * {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
-    
-    /* Main app background - Soft cream */
+
+    /* ─── Global Background ─── */
     .stApp {
-        background: linear-gradient(135deg, #faf8f5 0%, #f5f2ed 50%, #ede8e0 100%);
-        background-attachment: fixed;
-    }
-    
-    /* Subtle overlay */
-    .stApp::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.02);
-        pointer-events: none;
-        z-index: 0;
+        background-color: #E8F4F8;
     }
 
-    /* ============================================
-       SIDEBAR STYLING
-       ============================================ */
+    /* ─── Sidebar ─── */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, rgba(250, 248, 245, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
-        backdrop-filter: blur(10px);
-        border-right: 1px solid rgba(123, 164, 145, 0.15);
-        box-shadow: 4px 0 20px rgba(123, 164, 145, 0.08);
-    }
-    
-    section[data-testid="stSidebar"] > div {
-        padding-top: 2rem;
+        background-color: #FFFFFF;
+        border-right: 1px solid #B2D8E8;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
     }
 
-    /* ============================================
-       TAB STYLING - Soft sage green
-       ============================================ */
-    button[data-baseweb="tab"] {
-        background-color: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
-        margin-right: 12px;
-        padding: 14px 28px;
-        color: #5a6c5d;
-        border: 2px solid rgba(123, 164, 145, 0.2);
+    /* ─── Page Header (h1 banner feel) ─── */
+    h1 {
+        color: #FFFFFF !important;
+        font-weight: 800;
+        font-size: 34px;
+        background: linear-gradient(135deg, #1B3F5E 0%, #265E7E 100%);
+        padding: 22px 32px;
+        border-radius: 14px;
+        margin-bottom: 1.2rem;
+        letter-spacing: -0.5px;
+    }
+
+    h2 {
+        color: #1B3F5E;
+        font-weight: 700;
+        font-size: 22px;
+        margin-top: 1.5rem;
+    }
+
+    h3 {
+        color: #265E7E;
+        font-weight: 700;
+        font-size: 18px;
+        margin-top: 1rem;
+    }
+
+    h4 {
+        color: #37718E;
         font-weight: 600;
         font-size: 15px;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    }
-
-    button[data-baseweb="tab"]:hover {
-        background: rgba(123, 164, 145, 0.12);
-        border-color: rgba(123, 164, 145, 0.35);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(123, 164, 145, 0.15);
-    }
-
-    button[data-baseweb="tab"][aria-selected="true"] {
-        background: linear-gradient(135deg, #7ba491 0%, #84a98c 100%);
-        color: white;
-        font-weight: 700;
-        border-color: transparent;
-        box-shadow: 0 8px 24px rgba(123, 164, 145, 0.3);
-        transform: translateY(-2px) scale(1.02);
     }
 
     /* ============================================
-       METRIC CARDS - Soft earthy style
+       TAB STYLING — BI Dashboard Style
+       ============================================ */
+
+    /* Hide default Streamlit tab underline & indicator */
+    [data-baseweb="tab-highlight"],
+    [data-testid="stTabIndicator"],
+    div[data-testid="stTabs"] > div > div:nth-child(2) {
+        display: none !important;
+    }
+
+    /* Tab list container */
+    div[data-testid="stTabs"] > div {
+        border-bottom: none !important;
+        gap: 10px !important;
+        margin-bottom: 20px !important;
+        background-color: #FFFFFF;
+        border-radius: 12px;
+        padding: 8px 12px;
+        border: 1px solid #B2D8E8;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    /* Individual tab — Inactive */
+    button[data-testid="stTab"] {
+        background-color: transparent !important;
+        border-radius: 8px !important;
+        padding: 10px 20px !important;
+        color: #37718E !important;
+        border: none !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        margin-right: 4px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    button[data-testid="stTab"]:hover {
+        background-color: #E8F4F8 !important;
+        color: #1B3F5E !important;
+    }
+
+    /* Active Tab — Dark Navy with white text */
+    button[data-testid="stTab"][aria-selected="true"] {
+        background-color: #1B3F5E !important;
+        color: #FFFFFF !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(27, 63, 94, 0.25) !important;
+    }
+
+    /* Force text colour to inherit */
+    button[data-testid="stTab"] p {
+        color: inherit !important;
+    }
+
+    /* ============================================
+       METRIC CARDS
        ============================================ */
     div[data-testid="metric-container"] {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(123, 164, 145, 0.15);
-        padding: 28px;
-        border-radius: 20px;
-        box-shadow: 
-            0 8px 32px rgba(123, 164, 145, 0.1),
-            inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
+        background-color: #FFFFFF;
+        border: 1px solid #B2D8E8;
+        padding: 20px 24px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        transition: all 0.2s ease;
     }
-    
-    /* Subtle gradient border effect */
-    div[data-testid="metric-container"]::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(45deg, #7ba491, #c9ae86, #c97c5d, #7ba491);
-        background-size: 400% 400%;
-        border-radius: 20px;
-        z-index: -1;
-        opacity: 0;
-        transition: opacity 0.4s;
-        animation: gradientShift 4s ease infinite;
-    }
-    
-    @keyframes gradientShift {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-    }
-    
-    div[data-testid="metric-container"]:hover::before {
-        opacity: 0.2;
-    }
-    
+
     div[data-testid="metric-container"]:hover {
-        box-shadow: 
-            0 20px 60px rgba(123, 164, 145, 0.2),
-            inset 0 1px 0 0 rgba(255, 255, 255, 1);
-        transform: translateY(-4px) scale(1.02);
-        background: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
     }
 
     div[data-testid="metric-container"] label {
-        color: #6b7c6e;
-        font-size: 13px;
-        font-weight: 600;
+        color: #37718E;
+        font-size: 12px;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
     }
 
     div[data-testid="metric-container"] [data-testid="stMetricValue"] {
-        background: linear-gradient(135deg, #7ba491 0%, #84a98c 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 42px;
+        color: #1B3F5E;
+        font-size: 30px;
         font-weight: 800;
-        font-family: 'Space Grotesk', sans-serif;
     }
 
-    /* ============================================
-       TYPOGRAPHY
-       ============================================ */
-    h1 {
-        background: linear-gradient(135deg, #7ba491 0%, #84a98c 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 800;
-        font-size: 48px;
-        margin-bottom: 0.5rem;
-        font-family: 'Space Grotesk', sans-serif;
-        text-shadow: 0 4px 12px rgba(123, 164, 145, 0.15);
+    /* ─── Highlighted metric (pink accent) — apply to first col metric ─── */
+    div[data-testid="metric-container"]:nth-child(2) {
+        border-top: 4px solid #C2185B;
     }
-    
-    h2 {
-        color: #3d4f42;
-        font-weight: 700;
-        font-size: 32px;
-        margin-top: 1.5rem;
-        font-family: 'Space Grotesk', sans-serif;
+    div[data-testid="metric-container"]:nth-child(3) {
+        border-top: 4px solid #C2185B;
     }
-    
-    h3 {
-        color: #4a5d4e;
-        font-weight: 600;
-        font-size: 24px;
-        margin-top: 1rem;
+
+    /* ─── Streamlit native bordered containers ─── */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 14px !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #B2D8E8 !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+        padding: 24px !important;
+        margin-bottom: 20px !important;
     }
 
     /* ============================================
        FORM ELEMENTS
        ============================================ */
     div[data-baseweb="select"] {
-        border-radius: 16px;
-        border: 2px solid rgba(123, 164, 145, 0.2);
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
+        border-radius: 10px;
+        border: 1px solid #B2D8E8;
+        background-color: #FFFFFF;
     }
-    
-    div[data-baseweb="select"]:hover {
-        border-color: rgba(123, 164, 145, 0.4);
-        box-shadow: 0 4px 12px rgba(123, 164, 145, 0.12);
-    }
-    
-    /* Input fields */
+
     input, textarea {
-        border-radius: 12px;
-        border: 2px solid rgba(123, 164, 145, 0.2) !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        transition: all 0.3s ease;
+        border-radius: 10px !important;
+        border: 1px solid #B2D8E8 !important;
+        background-color: #FFFFFF !important;
+        color: #1B3F5E !important;
     }
-    
+
     input:focus, textarea:focus {
-        border-color: rgba(123, 164, 145, 0.5) !important;
-        box-shadow: 0 0 0 3px rgba(123, 164, 145, 0.08) !important;
+        border-color: #00838F !important;
+        box-shadow: 0 0 0 2px rgba(0, 131, 143, 0.2) !important;
     }
 
     /* ============================================
        ALERT BOXES
        ============================================ */
     .stAlert {
-        border-radius: 16px;
-        border: none;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 20px rgba(123, 164, 145, 0.1);
-        padding: 1.25rem;
+        border-radius: 10px;
+        background-color: #FFFFFF;
+        border: 1px solid #B2D8E8;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     }
-    
-    /* Success alert */
+
     div[data-baseweb="notification"][kind="success"] {
-        border-left: 4px solid #84a98c;
+        border-left: 4px solid #00838F;
+        background-color: #E0F7FA;
     }
-    
-    /* Info alert */
+
     div[data-baseweb="notification"][kind="info"] {
-        border-left: 4px solid #7ba491;
+        border-left: 4px solid #1B3F5E;
+        background-color: #E8F4F8;
     }
-    
-    /* Warning alert */
+
     div[data-baseweb="notification"][kind="warning"] {
-        border-left: 4px solid #c9ae86;
+        border-left: 4px solid #F59E0B;
+        background-color: #FFFBEB;
     }
-    
-    /* Error alert */
+
     div[data-baseweb="notification"][kind="error"] {
-        border-left: 4px solid #c97c5d;
+        border-left: 4px solid #C2185B;
+        background-color: #FCE4EC;
     }
 
     /* ============================================
        BUTTONS
        ============================================ */
-    .stButton > button {
-        background: linear-gradient(135deg, #7ba491 0%, #84a98c 100%);
-        color: white;
-        border: none;
-        border-radius: 14px;
-        padding: 12px 32px;
-        font-weight: 600;
-        font-size: 15px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 16px rgba(123, 164, 145, 0.25);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    /* Primary Button — Teal (active/train) */
+    button[data-testid="baseButton-primary"] {
+        background-color: #00838F !important;
+        color: #FFFFFF !important;
+        border: 1px solid #00838F !important;
+        border-radius: 10px !important;
+        padding: 10px 24px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 12px rgba(0, 131, 143, 0.25) !important;
     }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(123, 164, 145, 0.35);
-        background: linear-gradient(135deg, #84a98c 0%, #7ba491 100%);
+
+    button[data-testid="baseButton-primary"]:hover {
+        background-color: #00696F !important;
+        box-shadow: 0 6px 18px rgba(0, 131, 143, 0.35) !important;
+        transform: translateY(-1px) !important;
     }
-    
-    .stButton > button:active {
-        transform: translateY(0);
+
+    /* Secondary Button — White card */
+    button[data-testid="baseButton-secondary"] {
+        background-color: #FFFFFF !important;
+        color: #1B3F5E !important;
+        border: 1px solid #B2D8E8 !important;
+        border-radius: 10px !important;
+        padding: 10px 24px !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    button[data-testid="baseButton-secondary"]:hover {
+        background-color: #E8F4F8 !important;
+        border-color: #37718E !important;
+        transform: translateY(-1px) !important;
+    }
+
+    button[data-testid="baseButton-primary"] p,
+    button[data-testid="baseButton-secondary"] p {
+        color: inherit !important;
     }
 
     /* ============================================
-       DATAFRAMES & TABLES
+       DATAFRAMES & CHARTS
        ============================================ */
     .stDataFrame {
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(123, 164, 145, 0.08);
-    }
-    
-    /* ============================================
-       CHARTS & VISUALIZATIONS
-       ============================================ */
-    .js-plotly-plot {
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(123, 164, 145, 0.08);
+        border-radius: 12px;
+        border: 1px solid #B2D8E8;
+        background-color: #FFFFFF;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     }
 
     /* ============================================
-       CUSTOM CONTAINERS
+       CUSTOM CARD CLASS
        ============================================ */
     .custom-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        padding: 28px;
-        border-radius: 20px;
-        box-shadow: 0 8px 32px rgba(123, 164, 145, 0.12);
-        border: 1px solid rgba(123, 164, 145, 0.15);
-        margin-bottom: 24px;
-        transition: all 0.4s ease;
+        background-color: #FFFFFF;
+        padding: 20px 24px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+        border: 1px solid #B2D8E8;
+        margin-bottom: 20px;
+        transition: all 0.2s ease;
     }
-    
+
     .custom-card:hover {
-        box-shadow: 0 16px 48px rgba(123, 164, 145, 0.2);
-        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
     }
 
     /* ============================================
        PROGRESS BARS
        ============================================ */
     .stProgress > div > div {
-        background: linear-gradient(90deg, #7ba491 0%, #84a98c 100%);
-        border-radius: 10px;
-        height: 12px;
+        background-color: #00838F;
+        border-radius: 9999px;
+        height: 8px;
     }
 
     /* ============================================
-       SCROLLBAR - Soft sage
+       EXPANDER
        ============================================ */
-    ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(250, 248, 245, 0.5);
-        border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #7ba491 0%, #84a98c 100%);
-        border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #84a98c 0%, #7ba491 100%);
+    .streamlit-expanderHeader {
+        background-color: #FFFFFF !important;
+        color: #1B3F5E !important;
+        font-weight: 600 !important;
+        border: 1px solid #B2D8E8 !important;
+        border-radius: 10px !important;
     }
 
-    /* ============================================
-       ANIMATIONS
-       ============================================ */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .element-container {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    /* ============================================
-       MARKDOWN & TEXT
-       ============================================ */
-    .stMarkdown {
-        color: #3d4f42;
-    }
-    
-    hr {
-        border: none;
-        height: 2px;
-        background: linear-gradient(90deg, 
-            transparent 0%, 
-            rgba(123, 164, 145, 0.25) 50%, 
-            transparent 100%);
-        margin: 2rem 0;
-    }
-    
-    /* ============================================
-       SIDEBAR IMPROVEMENTS
-       ============================================ */
-    section[data-testid="stSidebar"] h2 {
-        color: #7ba491;
-        font-weight: 700;
-        font-size: 24px;
-        font-family: 'Space Grotesk', sans-serif;
-    }
-    
-    section[data-testid="stSidebar"] h3 {
-        color: #4a5d4e;
-        font-weight: 600;
-        font-size: 18px;
-    }
-    
-    section[data-testid="stSidebar"] label {
-        color: #5a6c5d;
-        font-weight: 600;
-        font-size: 14px;
+    .streamlit-expanderContent {
+        border: 1px solid #B2D8E8 !important;
+        border-top: none !important;
+        border-bottom-left-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
     }
 
     </style>
         """,
         unsafe_allow_html=True
     )
-
-

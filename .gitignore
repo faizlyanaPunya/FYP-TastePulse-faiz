@@ -32,3 +32,6 @@
 /wordcloud.ipynb
 /wordcloud_place
 /__pycache__
+
+# Streamlit secrets — never push this to GitHub
+.streamlit/secrets.toml
