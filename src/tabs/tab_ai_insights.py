@@ -1,7 +1,10 @@
+# pyrefly: ignore [missing-import]
 import streamlit as st
 import pandas as pd
 import io
+# pyrefly: ignore [missing-import]
 from google import genai
+# pyrefly: ignore [missing-import]
 from docx import Document
 
 # ── Gemini setup (key from secrets.toml) ──────────────────────────────────────
