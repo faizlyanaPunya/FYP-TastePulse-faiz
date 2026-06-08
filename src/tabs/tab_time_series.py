@@ -3,10 +3,10 @@ import plotly.graph_objects as go
 import pandas as pd
 
 def render(filtered_df):
-    st.markdown("## 📈 Sentiment Trends Over Time")
+    st.markdown("## Sentiment Trends Over Time")
 
     if filtered_df.empty:
-        st.warning("⚠️ No data available for time series.")
+        st.warning("No data available for time series.")
         return
 
     # Create time series for each sentiment
@@ -78,17 +78,17 @@ def render(filtered_df):
     # NEW: AI GRAPH ANALYSIS ENGINE
     # ----------------------------------------------------
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("### ✨ Ask AI to Analyze this Trend")
+    st.markdown("### Ask AI to Analyze this Trend")
     st.markdown("Generate an automated data-analyst explanation of the graph's visual movements.")
     
-    if st.button("✨ Generate Graph Analysis", type="primary"):
+    if st.button("Generate Graph Analysis", type="primary"):
         from src.tabs.tab_ai_insights import _get_gemini_client, _call_gemini
         
         client, err = _get_gemini_client()
         if err:
             st.error(err)
         else:
-            with st.spinner("🤖 Analyzing graph movements..."):
+            with st.spinner("Analyzing graph movements..."):
                 dates_sorted = sorted(ts_overall['date'].unique())
                 
                 graph_data_str = "Chronological Time-Series Data:\n"
@@ -127,21 +127,21 @@ DATA:
     # NEW: ROOT CAUSE ANALYZER FOR MPKP INSIGHTS
     # ----------------------------------------------------
     st.markdown("---")
-    st.markdown("## 🔍 Deep-Dive: Root Cause Analysis")
+    st.markdown("## Deep-Dive: Root Cause Analysis")
     st.markdown("Tracing *why* sentiments drop. This section isolates the negative feedback in your selected timeframe to provide **actionable evidence for MPKP**.")
     
     # Isolate negative dataframe based on current filter
     negative_df = filtered_df[filtered_df['sentiment'] == 'negative']
     
     if negative_df.empty:
-        st.success("🎉 Great news! There are no negative reviews in this selected timeframe and location.")
+        st.success("Great news! There are no negative reviews in this selected timeframe and location.")
     else:
-        st.error(f"⚠️ Found **{len(negative_df)}** negative reviews. Analyzing the root causes...")
+        st.error(f"Found **{len(negative_df)}** negative reviews. Analyzing the root causes...")
         
         col_ctx, col_evid = st.columns([1, 1.5])
         
         with col_ctx:
-            st.markdown("#### 🚨 Top Negative Indicators")
+            st.markdown("#### Top Negative Indicators")
             st.caption("Frequently mentioned issues in this period:")
             
             with st.container():
@@ -164,7 +164,7 @@ DATA:
                             top_issues = Counter(all_bigrams).most_common(7)
                             for issue, count in top_issues:
                                 # Highlight the issue name
-                                st.markdown(f"🔸 **{issue}** — *(mentioned {count} times)*")
+                                st.markdown(f"**{issue}** — *(mentioned {count} times)*")
                         else:
                             st.write("Could not extract specific bigram topics. Check evidence panel.")
                     except Exception as e:
@@ -174,7 +174,7 @@ DATA:
                 st.markdown('</div>', unsafe_allow_html=True)
                 
         with col_evid:
-            st.markdown("#### 📋 Actionable Evidence (MPKP Reports)")
+            st.markdown("#### Actionable Evidence (MPKP Reports)")
             st.caption("Latest verbatim feedback samples for context validation:")
             
             # Show the raw text as individual report cards
@@ -190,5 +190,5 @@ DATA:
                 place_name = row.get('place', 'Unknown Location')
                 date_val = row.get('date', 'Unknown Date')
                 
-                with st.expander(f"📉 Problem at {place_name} ({date_val})", expanded=True):
+                with st.expander(f"Problem at {place_name} ({date_val})", expanded=True):
                     st.write(f"*{row.get('text', 'No text available')}*")

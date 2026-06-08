@@ -82,7 +82,7 @@ def render_initiative_card(title, strategy, recommendation, priority_label, prio
             </div>
             <p style="margin: 5px 0; color: #5a6c5d; font-size: 15px;"><b>Strategy:</b> {strategy}</p>
             <div style="background-color: {color}11; padding: 15px; border-radius: 10px; border: 1px solid {color}44; color: #2d3f32; margin-top: 15px; font-weight: 500;">
-                💡 <b>Action Item:</b> {recommendation}
+                <b>Action Item:</b> {recommendation}
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -91,18 +91,18 @@ def render_initiative_card(title, strategy, recommendation, priority_label, prio
 def render(df, selected_place="All Places"):
     """Main page that shows advice based on your data"""
     if df.empty:
-        st.warning("⚠️ No data found.")
+        st.warning("No data found.")
         return
 
-    st.markdown("## 💡 Actionable Initiatives & Strategies")
+    st.markdown("## Actionable Initiatives & Strategies")
     st.markdown("Data-driven recommendations to improve food tourism in Northern Malaysia based on your model predictions.")
     st.markdown("---")
     
     if selected_place == "All Places":
-        st.info("👆 Choose a specific food destination on the sidebar to see targeted improvement strategies.")
+        st.info("Choose a specific food destination on the sidebar to see targeted improvement strategies.")
         
         # === RESTORED: MPKP Hygiene & Infrastructure Global Roster ===
-        st.markdown("### 🚨 MPKP District Maintenance & Hygiene Roster")
+        st.markdown("### MPKP District Maintenance & Hygiene Roster")
         st.markdown("Automated assessment of restaurant health and public infrastructure in Kubang Pasu.")
         
         h_pattern = '|'.join([rf'\b{kw}\b' for kw in HYGIENE_KEYWORDS])
@@ -114,7 +114,7 @@ def render(df, selected_place="All Places"):
             p_df = df[df['place'] == p]
             h_violations = p_df[p_df['text'].str.contains(h_pattern, case=False, na=False, regex=True)]
             
-            h_status = "🚨 Warning" if not h_violations.empty else "✅ Passed"
+            h_status = "Warning" if not h_violations.empty else "Passed"
             i_score = calculate_aspect_score(p_df, INFRA_KEYWORDS)
             i_status = f"{i_score:.1f}%" if i_score is not None else "No Data"
             
@@ -145,7 +145,7 @@ def render(df, selected_place="All Places"):
         col1, col2 = st.columns([3, 2])
         
         with col1:
-            st.markdown("### 🏆 Destination Health Ranking")
+            st.markdown("### Destination Health Ranking")
             fig = px.bar(
                 summary_df.head(10), # Show top 10 to avoid clutter
                 x="Health Score", 
@@ -160,13 +160,13 @@ def render(df, selected_place="All Places"):
             st.plotly_chart(fig, use_container_width=True)
             
         with col2:
-            st.markdown("### 📊 Detailed Summary")
+            st.markdown("### Detailed Summary")
             display_df = summary_df.copy()
             display_df["Health Score"] = display_df["Health Score"].apply(lambda x: f"{x:.1f}%")
             st.dataframe(display_df, use_container_width=True, hide_index=True)
 
         st.markdown("<br><hr>", unsafe_allow_html=True)
-        st.markdown("### 📅 District-Wide Peak Visiting Days")
+        st.markdown("### District-Wide Peak Visiting Days")
         if 'createTimeISO' in df.columns and not df['createTimeISO'].isna().all():
             # Create a copy to avoid SettingWithCopyWarning
             time_df = df.copy()
@@ -194,15 +194,15 @@ def render(df, selected_place="All Places"):
                 
                 if not daily_counts['Review Count'].sum() == 0:
                     peak_day_global = daily_counts.loc[daily_counts['Review Count'].idxmax()]
-                    st.info(f"💡 **MPKP Insight:** The busiest day for food tourism across the district is **{peak_day_global['Day']}**. MPKP should ensure traffic control, parking availability, and waste collection are optimized around this period.")
+                    st.info(f"**MPKP Insight:** The busiest day for food tourism across the district is **{peak_day_global['Day']}**. MPKP should ensure traffic control, parking availability, and waste collection are optimized around this period.")
             else:
-                st.info("📅 Date data is empty.")
+                st.info("Date data is empty.")
         else:
-            st.info("🕒 Time data is not available.")
+            st.info("Time data is not available.")
 
         # === COMPLAINT CATEGORY DRILL-DOWN ===
         st.markdown("<br><hr>", unsafe_allow_html=True)
-        st.markdown("### 🗂️ Complaint Category Drill-Down")
+        st.markdown("### Complaint Category Drill-Down")
         st.markdown("Select an MPKP department category to see which places are receiving the most complaints, along with raw evidence.")
         
         target_col = 'predicted_sentiment' if 'predicted_sentiment' in df.columns else 'sentiment'
@@ -219,15 +219,15 @@ def render(df, selected_place="All Places"):
         inf_df = get_category_subset(neg_df, INFRA_KEYWORDS)
         
         cat_tabs = st.tabs([
-            f"🧼 Hygiene ({len(hyg_df)})", 
-            f"🛎️ Service ({len(srv_df)})", 
-            f"💰 Pricing ({len(prc_df)})", 
-            f"🏗️ Infrastructure ({len(inf_df)})"
+            f"Hygiene ({len(hyg_df)})", 
+            f"Service ({len(srv_df)})", 
+            f"Pricing ({len(prc_df)})", 
+            f"Infrastructure ({len(inf_df)})"
         ])
         
         def render_category_tab(cat_df, title, color):
             if cat_df.empty:
-                st.success(f"✅ No {title.lower()} complaints detected across the district.")
+                st.success(f"No {title.lower()} complaints detected across the district.")
                 return
                 
             # Group by place to get count
@@ -238,7 +238,7 @@ def render(df, selected_place="All Places"):
             st.dataframe(place_counts, use_container_width=True, hide_index=True)
             
             st.markdown(f"**Raw Evidence ({title}):**")
-            with st.expander(f"🔍 View All {len(cat_df)} {title} Complaint Reviews"):
+            with st.expander(f"View All {len(cat_df)} {title} Complaint Reviews"):
                 sorted_df = cat_df.sort_values(by='sentiment_score') if 'sentiment_score' in cat_df.columns else cat_df
                 for idx, row in sorted_df.iterrows():
                     score_str = f"{row['sentiment_score']:.2f}" if 'sentiment_score' in row else 'N/A'
@@ -311,7 +311,7 @@ def render(df, selected_place="All Places"):
             mentioned_kws = [kw for kw in HYGIENE_KEYWORDS if violations_df['text'].str.contains(rf'\b{kw}\b', case=False, regex=True).any()]
             st.markdown(f"""
             <div style="background-color: #ffebee; border-left: 5px solid #f44336; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-                <h4 style="color: #b71c1c; margin-top: 0;">🚨 CRITICAL HYGIENE WARNING</h4>
+                <h4 style="color: #b71c1c; margin-top: 0;">CRITICAL HYGIENE WARNING</h4>
                 <p style="color: #b71c1c; margin-bottom: 0;"><strong>{len(violations_df)} review(s)</strong> mention hygiene issues. <br>
                 <strong>Keywords:</strong> {", ".join(mentioned_kws)}<br>
                 <em>This location may be flagged for inspection.</em></p>
@@ -326,7 +326,7 @@ def render(df, selected_place="All Places"):
                else "Halt expanding marketing budgets temporarily. Focus on fixing core sentiment issues before inviting more tourists."
         
         render_initiative_card(
-            "📣 1. Marketing & Tourism Growth",
+            "1. Marketing & Tourism Growth",
             "Promoting the destination to a wider audience",
             rec1,
             "Urgency", growth_prio, status_color
@@ -338,7 +338,7 @@ def render(df, selected_place="All Places"):
                else f"Conduct an immediate service training session specifically addressing these recurring complaints from the AI model: '{neg_str}'."
         
         render_initiative_card(
-            "👥 2. Service Quality & Training",
+            "2. Service Quality & Training",
             "Upskilling staff and improving customer hospitality",
             rec2,
             "Urgency", train_prio, status_color
@@ -355,7 +355,7 @@ def render(df, selected_place="All Places"):
                    else "Monitor review volume over the next 3 months to justify physical upgrades."
         
         render_initiative_card(
-            "🏗️ 3. Facility Enhancements",
+            "3. Facility Enhancements",
             "Upgrading physical shop aspects based on demand",
             rec3,
             "Impact", "High" if vol >= 15 or (infra_score is not None and infra_score < 45) else "Normal", 
@@ -363,7 +363,7 @@ def render(df, selected_place="All Places"):
         )
 
         st.markdown("<br><hr>", unsafe_allow_html=True)
-        st.markdown("### 📅 Peak Visiting Days")
+        st.markdown("### Peak Visiting Days")
         if 'createTimeISO' in place_df.columns and not place_df['createTimeISO'].isna().all():
             p_time_df = place_df.copy()
             # Ensure it is a datetime object to avoid .dt accessor errors
@@ -390,8 +390,8 @@ def render(df, selected_place="All Places"):
                 
                 if not daily_counts['Review Count'].sum() == 0:
                     peak_day = daily_counts.loc[daily_counts['Review Count'].idxmax()]
-                    st.info(f"💡 **Business Insight:** Most reviews for {selected_place} are posted on **{peak_day['Day']}**. The owner should allocate more staff and prepare inventory before this peak day to maintain good service.")
+                    st.info(f"**Business Insight:** Most reviews for {selected_place} are posted on **{peak_day['Day']}**. The owner should allocate more staff and prepare inventory before this peak day to maintain good service.")
             else:
-                st.info("📅 Date data is empty for this place.")
+                st.info("Date data is empty for this place.")
         else:
-            st.info("🕒 Time data is not available for this place.")
+            st.info("Time data is not available for this place.")

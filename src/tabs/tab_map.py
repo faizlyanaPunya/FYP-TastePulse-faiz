@@ -127,11 +127,11 @@ def get_coordinates(place_name):
 from src.tabs.tab_initiatives import calculate_aspect_score, INFRA_KEYWORDS, calculate_sentiment_health_score, get_top_keywords
 
 def render(df, selected_place):
-    st.markdown("## 🗺️ Geographical Sentiment Analysis")
+    st.markdown("## Geographical Sentiment Analysis")
     st.markdown("Explore the spatial distribution of sentiment and infrastructure health across Kubang Pasu.")
     
     if df.empty:
-        st.warning("⚠️ No data available to display on the map.")
+        st.warning("No data available to display on the map.")
         return
 
 
@@ -224,7 +224,7 @@ def render(df, selected_place):
         gmaps_link_html = f"""
         <div style="margin-top: 10px; background: #4285F4; padding: 8px; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <a href="{gmaps_url}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: bold; color: #fff; text-decoration: none; display: block;">
-                📍 View on Google Maps
+                View on Google Maps
             </a>
         </div>
         """
@@ -240,7 +240,7 @@ def render(df, selected_place):
                 video_link_html = f"""
                 <div style="margin-top: 8px; background: #000; padding: 8px; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <a href="{video_url}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: bold; color: #fff; text-decoration: none; display: block;">
-                        <span style="color: #fe2c55;">🎵</span> Watch a TikTok Review
+                        Watch a TikTok Review
                     </a>
                 </div>
                 """
@@ -274,4 +274,4 @@ def render(df, selected_place):
     
     # Additional Context Box
     if selected_place == "All Places":
-        st.info("💡 **Tip:** The map pins are placed automatically based on the town name mentioned in the restaurant. You can manually adjust any pin's exact street location in `tab_map.py`.")
+        st.info("**Tip:** The map pins are placed automatically based on the town name mentioned in the restaurant. You can manually adjust any pin's exact street location in `tab_map.py`.")

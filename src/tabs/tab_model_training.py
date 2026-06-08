@@ -153,11 +153,11 @@ def train_models(df, models_config):
         progress_bar.empty()
         status_text.empty()
         
-        st.toast("✅ Training complete!", icon="🚀")
+        st.toast("Training complete!")
         
         return model_results, True, test_df
         
     except Exception as e:
-        st.error(f"❌ Error during training: {str(e)}")
+        st.error(f"Error during training: {str(e)}")
         return {}, False, None
 

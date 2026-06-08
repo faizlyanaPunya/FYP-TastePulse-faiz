@@ -39,11 +39,27 @@ def render(model_results):
     
     for idx, metric in enumerate(metrics_list):
         with columns[idx]:
-            st.markdown(f"### {metric}")
+            # Generate the model scores HTML inside the card
+            scores_html = ""
             for model_name, metrics in all_metrics.items():
                 value = metrics[metric]
-                st.metric(model_name, f"{value:.3f}")
-    
+                # Pick a color based on performance (Teal for good, Navy for okay, Pink for critical)
+                score_color = "#00838F" if value >= 0.70 else "#265E7E" if value >= 0.60 else "#C2185B"
+                
+                scores_html += f"""<div style="margin-bottom: 10px; padding: 12px; background: #F8FAFC; border-radius: 10px; border: 1px solid #B2D8E8; text-align: left;">
+<div style="font-size: 11px; font-weight: 700; color: #37718E; text-transform: uppercase; letter-spacing: 0.5px;">{model_name}</div>
+<div style="font-size: 26px; font-weight: 800; color: {score_color}; margin-top: 2px; letter-spacing: -0.5px;">{value:.3f}</div>
+</div>"""
+            
+            # Card container HTML (no leading indents in multiline string)
+            card_html = f"""<div class="custom-card" style="border-top: 4px solid #00838F; padding: 22px; border-radius: 16px; background: #FFFFFF; border: 1px solid #B2D8E8; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+<div>
+<h4 style="margin-top: 0; margin-bottom: 15px; color: #1B3F5E; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; text-align: center;">{metric}</h4>
+{scores_html}
+</div>
+</div>"""
+            st.markdown(card_html, unsafe_allow_html=True)
+            
     st.markdown("---")
     
     # Comparison chart

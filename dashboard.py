@@ -9,35 +9,51 @@ from src.tabs import (
     tab_overview, 
     tab_time_series, 
     tab_wordcloud, 
-    tab_model_evaluation,
+    tab_about,
     tab_initiatives,
     tab_map,
     tab_influencer,
     tab_ai_insights  # AI-Powered Insights
 )
 
-st.set_page_config(page_title="TastePulse - Food Tourism Insights", layout="wide", page_icon="🥘")
+from PIL import Image
+import base64
+
+try:
+    logo_img = Image.open("TastePulse_Logo_Faiz.jpeg")
+    with open("TastePulse_Logo_Faiz.jpeg", "rb") as f:
+        logo_b64 = base64.b64encode(f.read()).decode("utf-8")
+    logo_html = f"<img src='data:image/jpeg;base64,{logo_b64}' style='width: 48px; height: 48px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); vertical-align: middle; margin-right: 12px;' />"
+except Exception:
+    logo_img = None
+    logo_html = "<span style='font-weight: 900; color: #00838F; padding-right: 12px;'>TP</span>"
+
+st.set_page_config(page_title="TastePulse - Food Tourism Insights", layout="wide", page_icon=logo_img)
 apply_theme()
 
 # Initialize session state for model training
 initialize_session_state()
 
 # TastePulse Header
-st.markdown("""
-    <h1>
-        <span style='-webkit-text-fill-color: initial;'>🥘</span> TastePulse
-        <span style='font-size: 15px; font-weight: 400; opacity: 0.75; margin-left: 12px; vertical-align: middle;'>
-            Northern Malaysia Food Tourism Sentiment Analysis
+st.markdown(f"""
+    <h1 style='display: flex; align-items: center; padding-left: 25px;'>
+        {logo_html}
+        <span>
+            TastePulse
+            <span style='font-size: 15px; font-weight: 400; opacity: 0.90; margin-left: 12px; vertical-align: middle;'>
+                Northern Malaysia Food Tourism Sentiment Analysis
+            </span>
         </span>
     </h1>
 """, unsafe_allow_html=True)
+
 
 # Render sidebar (handles file upload and model training)
 selected_place, date_range = render_sidebar()
 
 # Check if data is available (either uploaded or from training)
 if st.session_state.get('test_df') is None:
-    st.info("📤 **Please upload a CSV file and train models to get started**")
+    st.info("**Please upload a CSV file and train models to get started**")
     st.markdown("""
     ### How to use this dashboard:
     1. **Upload your dataset** in the sidebar (CSV file with columns: `text`, `sentiment`, `sentiment score`, `place` , `bigrams` )
@@ -45,9 +61,10 @@ if st.session_state.get('test_df') is None:
     3. **Click 'Train Models'** to train and generate insights
     4. **Explore the tabs** to view sentiment analysis results
     
-    > 💡 The dashboard will use the test data (20% split) for all insights and visualizations.
+    > The dashboard will use the test data (20% split) for all insights and visualizations.
     """)
     st.stop()
+
 
 # Use test data for all insights
 df = st.session_state.test_df
@@ -92,4 +109,4 @@ with tab6:
 with tab7:
     tab_ai_insights.render(df)
 with tab8:
-    tab_model_evaluation.render(st.session_state.model_results)
+    tab_about.render(st.session_state.model_results)

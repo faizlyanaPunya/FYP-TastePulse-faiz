@@ -90,6 +90,7 @@ def _summarise_data(df: pd.DataFrame) -> dict:
 _MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]
 
 def _call_gemini(client, prompt: str) -> str:
+    last_err = None
     for model_name in _MODELS:
         try:
             response = client.models.generate_content(
@@ -98,11 +99,13 @@ def _call_gemini(client, prompt: str) -> str:
             )
             return response.text
         except Exception as e:
-            err = str(e)
-            if "429" in err or "RESOURCE_EXHAUSTED" in err:
+            last_err = e
+            err = str(e).upper()
+            # Try the next model if we hit rate limits (429) or high demand / service unavailable (503)
+            if any(code in err for code in ["429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "OVERLOAD"]):
                 continue  # try next model
             return f"⚠️ Gemini error: {e}"
-    return "⚠️ All Gemini models are currently quota-limited. Please try again in a few minutes."
+    return f"⚠️ All Gemini models are currently busy or unavailable. Last error: {last_err}"
 
 
 # ── Prompt builders ────────────────────────────────────────────────────────────

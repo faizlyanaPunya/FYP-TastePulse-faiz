@@ -5,11 +5,11 @@ import plotly.express as px
 from src.tabs.tab_initiatives import calculate_sentiment_health_score, get_top_keywords
 
 def render(df, selected_place):
-    st.markdown("## 📊 Executive Summary Hub")
+    st.markdown("## Executive Summary Hub")
     st.markdown("<p style='color: #37718E; font-size: 15px; margin-top: -10px; margin-bottom: 25px;'>A high-level overview of Northern Malaysia food tourism performance.</p>", unsafe_allow_html=True)
     
     if df.empty:
-        st.warning("⚠️ No data available.")
+        st.warning("No data available.")
         return
     
     # ── CALCULATIONS ─────────────────────────────────────────────────────────────
@@ -70,7 +70,7 @@ def render(df, selected_place):
 
     # ── LAYER 2: LEADERBOARD ─────────────────────────────────────────────────────
     st.markdown("<div class='custom-card'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='color: #1B3F5E; margin-top: 0; margin-bottom: 20px;'>🏆 Destination Leaderboard</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color: #1B3F5E; margin-top: 0; margin-bottom: 20px;'>Destination Leaderboard</h3>", unsafe_allow_html=True)
     
     # Generate HTML for Top Performers
     top_html = ""
@@ -85,10 +85,10 @@ def render(df, selected_place):
     st.markdown(
         f"<div style='display: flex; justify-content: space-between; gap: 30px; flex-wrap: wrap;'>"
         f"<div style='flex: 1; min-width: 300px; padding: 20px; background: rgba(0, 131, 143, 0.03); border-top: 4px solid #00838F; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);'>"
-        f"<h4 style='color: #00838F; margin-top: 0; font-size: 16px; margin-bottom: 15px;'>🟢 Top Performers</h4>"
+        f"<h4 style='color: #00838F; margin-top: 0; font-size: 16px; margin-bottom: 15px;'>Top Performers</h4>"
         f"{top_html}</div>"
         f"<div style='flex: 1; min-width: 300px; padding: 20px; background: rgba(194, 24, 91, 0.03); border-top: 4px solid #C2185B; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);'>"
-        f"<h4 style='color: #C2185B; margin-top: 0; font-size: 16px; margin-bottom: 15px;'>🔴 Needs Attention</h4>"
+        f"<h4 style='color: #C2185B; margin-top: 0; font-size: 16px; margin-bottom: 15px;'>Needs Attention</h4>"
         f"{bottom_html}</div></div>", 
         unsafe_allow_html=True
     )
@@ -100,7 +100,7 @@ def render(df, selected_place):
     
     with row3_col1:
         st.markdown("<div class='custom-card'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='color: #1B3F5E; margin-top: 0;'>🥧 Overall Sentiment Breakdown</h3>", unsafe_allow_html=True) 
+        st.markdown("<h3 style='color: #1B3F5E; margin-top: 0;'>Overall Sentiment Breakdown</h3>", unsafe_allow_html=True) 
         
         fig_pie = px.pie(
             values=sentiment_counts.values,
@@ -121,7 +121,7 @@ def render(df, selected_place):
     
     with row3_col2:
         st.markdown("<div class='custom-card'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='color: #1B3F5E; margin-top: 0;'>📈 Sentiment Trend Over Time</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #1B3F5E; margin-top: 0;'>Sentiment Trend Over Time</h3>", unsafe_allow_html=True)
         
         if 'date' in df.columns:
             daily_sentiment = df.groupby('date').agg({'sentiment_score': 'mean', 'text': 'count'}).reset_index()
@@ -146,5 +146,5 @@ def render(df, selected_place):
             )
             st.plotly_chart(fig_time, use_container_width=True)
         else:
-            st.info("📅 Date data is not available for trend analysis.")
+            st.info("Date data is not available for trend analysis.")
         st.markdown("</div>", unsafe_allow_html=True)

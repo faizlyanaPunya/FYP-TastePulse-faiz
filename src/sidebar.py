@@ -5,7 +5,7 @@ def render_sidebar():
     """Render sidebar with file upload, model training, and filters"""
     
     # File Upload Section
-    st.sidebar.markdown("### 📂 Upload Dataset")
+    st.sidebar.markdown("### Upload Dataset")
     uploaded_file = st.sidebar.file_uploader(
         "Upload your CSV file",
         type=["csv"],
@@ -20,10 +20,10 @@ def render_sidebar():
             # Validate required columns
             required_cols = {'text', 'sentiment', 'place'}
             if not required_cols.issubset(set(uploaded_df.columns)):
-                st.sidebar.error(f"❌ Missing columns: {required_cols - set(uploaded_df.columns)}")
+                st.sidebar.error(f"Missing columns: {required_cols - set(uploaded_df.columns)}")
                 return None, None
             
-            st.sidebar.success("✅ Dataset uploaded!")
+            st.sidebar.success("Dataset uploaded!")
             st.sidebar.write(f"Shape: {uploaded_df.shape}")
             
             # Store in session state
@@ -36,22 +36,22 @@ def render_sidebar():
     else:
         training_df = st.session_state.get('uploaded_df', None)
         if training_df is None:
-            st.sidebar.info("👆 Please upload a CSV file to begin")
+            st.sidebar.info("Please upload a CSV file to begin")
     
     st.sidebar.markdown("---")
     
     # Model Training Section
-    st.sidebar.markdown("### 🤖 Train & Compare Models")
+    st.sidebar.markdown("### Train & Compare Models")
     
     if training_df is None:
-        st.sidebar.warning("⚠️ Upload dataset first")
+        st.sidebar.warning("Upload dataset first")
         return None, None
     
     train_multinomial = st.sidebar.checkbox("✓ Multinomial Naive Bayes", value=True)
     train_lstm = st.sidebar.checkbox("✓ LSTM", value=False)
     
     if train_multinomial or train_lstm:
-        if st.sidebar.button("🚀 Train Models", use_container_width=True):
+        if st.sidebar.button("Train Models", use_container_width=True):
             # Import here to avoid circular imports
             from src.tabs.tab_model_training import train_models
             
@@ -61,8 +61,8 @@ def render_sidebar():
                     'train_lstm': train_lstm
                 }
                 st.session_state.model_results, st.session_state.models_trained, st.session_state.test_df = train_models(training_df, models_config)
-                st.sidebar.success("✅ Models trained successfully!")
-                st.sidebar.info(f"📊 Test data: {len(st.session_state.test_df)} rows (20% split)")
+                st.sidebar.success("Models trained successfully!")
+                st.sidebar.info(f"Test data: {len(st.session_state.test_df)} rows (20% split)")
             else:
                 st.sidebar.error("Dataset must contain 'text' and 'sentiment' columns")
     else:
@@ -77,10 +77,10 @@ def render_sidebar():
         # Convert date column to datetime if it exists
         if 'date' in test_df.columns:
             test_df['date'] = pd.to_datetime(test_df['date'])
-        st.sidebar.markdown("### 🔧 Tourism Filters")
+        st.sidebar.markdown("### Tourism Filters")
         
         # Place selector
-        st.sidebar.markdown("**📍 Food Destination**")
+        st.sidebar.markdown("**Food Destination**")
         places = ["All Places"] + sorted(test_df["place"].unique().tolist())
         selected_place = st.sidebar.selectbox(
             "Select Destination",
@@ -91,7 +91,7 @@ def render_sidebar():
         # Date range (if date column exists)
         date_range = None
         if 'date' in test_df.columns:
-            st.sidebar.markdown("**📅 Date Range**")
+            st.sidebar.markdown("**Date Range**")
             
             min_date = pd.to_datetime(test_df['date']).min()
             max_date = pd.to_datetime(test_df['date']).max()
@@ -129,7 +129,7 @@ def render_sidebar():
         
         # Footer
         st.sidebar.markdown("---")
-        st.sidebar.info("💡 Insights based on test data (20% split)")
+        st.sidebar.info("Insights based on test data (20% split)")
     else:
         selected_place = None
         date_range = None

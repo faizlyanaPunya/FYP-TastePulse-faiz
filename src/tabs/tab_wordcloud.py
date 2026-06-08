@@ -5,11 +5,11 @@ import re
 import ast
 
 def render(filtered_df):
-    st.markdown("## ☁️ Word Cloud Analysis")
+    st.markdown("## Word Cloud Analysis")
     st.markdown("### Visualize Most Common Words by Sentiment")
     
     if filtered_df.empty:
-        st.warning("⚠️ No data available for word cloud.")
+        st.warning("No data available for word cloud.")
         return
     
     # Sentiment filter
@@ -25,7 +25,7 @@ def render(filtered_df):
         text_data = filtered_df['text_tokens'].dropna()
     
     if text_data.empty:
-        st.warning(f"⚠️ No {sentiment_filter.lower()} reviews available.")
+        st.warning(f"No {sentiment_filter.lower()} reviews available.")
         return
     
     # Convert tuples to space-separated strings
@@ -48,7 +48,7 @@ def render(filtered_df):
     combined_text = re.sub(r"\b(\w+)'\b", r"\1", combined_text)
     
     if not combined_text.strip():
-        st.warning("⚠️ No text data to generate word cloud.")
+        st.warning("No text data to generate word cloud.")
         return
     
     st.markdown("---")
@@ -90,19 +90,19 @@ def render(filtered_df):
         with col_metrics:
             st.markdown(f'''
             <div style="background-color: #fcfcfc; padding: 15px; border-radius: 12px; border-left: 6px solid #4CAF50; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px;">
-                <h4 style="margin: 0; color: #333; font-size: 15px; text-transform: uppercase;">📊 Total Reviews</h4>
+                <h4 style="margin: 0; color: #333; font-size: 15px; text-transform: uppercase;">Total Reviews</h4>
                 <hr style="margin: 8px 0; border: none; border-top: 1px solid #eee;">
                 <p style="font-size: 32px; font-weight: 800; color: #4CAF50; margin: 0;">{len(text_data):,}</p>
             </div>
             
             <div style="background-color: #fcfcfc; padding: 15px; border-radius: 12px; border-left: 6px solid #2196F3; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px;">
-                <h4 style="margin: 0; color: #333; font-size: 15px; text-transform: uppercase;">📝 Total Words</h4>
+                <h4 style="margin: 0; color: #333; font-size: 15px; text-transform: uppercase;">Total Words</h4>
                 <hr style="margin: 8px 0; border: none; border-top: 1px solid #eee;">
                 <p style="font-size: 32px; font-weight: 800; color: #2196F3; margin: 0;">{len(combined_text.split()):,}</p>
             </div>
             
             <div style="background-color: #fcfcfc; padding: 15px; border-radius: 12px; border-left: 6px solid #9c27b0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px;">
-                <h4 style="margin: 0; color: #333; font-size: 15px; text-transform: uppercase;">✨ Unique Words</h4>
+                <h4 style="margin: 0; color: #333; font-size: 15px; text-transform: uppercase;">Unique Words</h4>
                 <hr style="margin: 8px 0; border: none; border-top: 1px solid #eee;">
                 <p style="font-size: 32px; font-weight: 800; color: #9c27b0; margin: 0;">{len(set(combined_text.split())):,}</p>
             </div>
@@ -111,7 +111,7 @@ def render(filtered_df):
         st.markdown("---")
         
         # Show top keywords
-        st.markdown("### 📊 Top 20 Keywords")
+        st.markdown("### Top 20 Keywords")
         word_freq = wordcloud.words_
         top_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:20]
         
