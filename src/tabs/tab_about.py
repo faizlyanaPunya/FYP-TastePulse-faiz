@@ -125,7 +125,7 @@ def render(model_results):
     """, unsafe_allow_html=True)
 
     render_team_member(
-        "faiz.jpeg", 
+        "assets/faiz.jpeg", 
         "role-supervisee", 
         "Supervisee", 
         "Nur Faizlyana Binti Mohd Kamarul Ariffin", 
@@ -134,7 +134,7 @@ def render(model_results):
     )
 
     render_team_member(
-        "juhaida.jpeg", 
+        "assets/juhaida.jpeg", 
         "role-supervisor", 
         "Supervisor", 
         "Assoc. Prof. Ts. Dr. Juhaida Binti Abu Bakar", 
@@ -145,7 +145,7 @@ def render(model_results):
     st.markdown("### Peer Dashboards")
 
     render_team_member(
-        "najaa.jpg", 
+        "assets/najaa.jpg", 
         "role-peer1", 
         "TastePulse Dashboard", 
         "Nur Najaa Aini Binti Mohd Puzi", 
@@ -153,7 +153,7 @@ def render(model_results):
     )
 
     render_team_member(
-        "mak.jpeg", 
+        "assets/mak.jpeg", 
         "role-peer2", 
         "ThemePulse Dashboard", 
         "Mak Shei Wen", 

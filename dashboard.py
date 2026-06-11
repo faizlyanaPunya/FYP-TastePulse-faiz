@@ -20,8 +20,8 @@ from PIL import Image
 import base64
 
 try:
-    logo_img = Image.open("TastePulse_Logo_Faiz.jpeg")
-    with open("TastePulse_Logo_Faiz.jpeg", "rb") as f:
+    logo_img = Image.open("assets/TastePulse_Logo_Faiz.jpeg")
+    with open("assets/TastePulse_Logo_Faiz.jpeg", "rb") as f:
         logo_b64 = base64.b64encode(f.read()).decode("utf-8")
     logo_html = f"<img src='data:image/jpeg;base64,{logo_b64}' style='width: 48px; height: 48px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.15); vertical-align: middle; margin-right: 12px;' />"
 except Exception:
