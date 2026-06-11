@@ -47,5 +47,5 @@ ENV/
 env/
 .env
 
-# # Streamlit secrets — never push this to GitHub
-# .streamlit/secrets.toml
+# Streamlit secrets — never push this to GitHub
+.streamlit/secrets.toml
