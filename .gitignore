@@ -49,3 +49,4 @@ env/
 
 # Streamlit secrets — never push this to GitHub
 .streamlit/secrets.toml
+.streamlit/secrets.toml
