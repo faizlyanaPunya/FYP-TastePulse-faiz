@@ -3,218 +3,357 @@ import streamlit as st
 import pandas as pd
 # pyrefly: ignore [missing-import]
 import plotly.express as px
-import requests
 
-@st.cache_data(ttl=3600)
-def get_tiktok_user_info(username):
-    """Fetch TikTok user info using tikwm API, cached for performance"""
-    clean_username = username.replace('@', '').strip()
-    try:
-        res = requests.get(f"https://www.tikwm.com/api/user/info?unique_id={clean_username}", timeout=3).json()
-        if res.get('code') == 0:
-            u = res['data']['user']
-            s = res['data']['stats']
-            
-            # Format numbers helper
-            def f(n):
-                return f"{n/1e6:.1f}M" if n>1e6 else f"{n/1e3:.1f}K" if n>1e3 else str(n)
-                
-            return {
-                "avatar": u.get('avatarMedium'),
-                "nickname": u.get('nickname', ''),
-                "verified": u.get('verified', False),
-                "bio": u.get('signature', ''),
-                "followers": f(s.get('followerCount', 0)),
-                "videos": f(s.get('videoCount', 0)),
-                "likes": f(s.get('heartCount', 0)),
-                "success": True
-            }
-    except Exception:
-        pass
-    return {"success": False}
 
-def render_mpkp_card(title, description, icon_type, color_hex):
-    """Simplified professional card for MPKP (OBJ 4) with clean inline SVG icons"""
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _initials_div(username, rank_index=3, size_px=60, font_size=24):
+    """Pure HTML initials avatar with rank-coloured gradient."""
+    initial = username.lstrip('@')[0].upper() if len(username) > 1 else 'U'
+    grads = [
+        "linear-gradient(135deg,#FFD700,#FFA500)",   # gold   – rank 1
+        "linear-gradient(135deg,#CFD8DC,#90A4AE)",   # silver – rank 2
+        "linear-gradient(135deg,#D7CCC8,#8D6E63)",   # bronze – rank 3
+        "linear-gradient(135deg,#1B3F5E,#37718E)",   # navy   – other
+    ]
+    grad = grads[min(rank_index, 3)]
+    return (
+        f'<div style="background:{grad};color:#FFF;width:{size_px}px;height:{size_px}px;'
+        f'border-radius:50%;display:flex;align-items:center;justify-content:center;'
+        f'font-size:{font_size}px;font-weight:800;'
+        f'box-shadow:0 4px 12px rgba(0,0,0,0.15);border:2px solid #FFF;">'
+        f'{initial}</div>'
+    )
+
+
+def _avatar_img(username, rank_index, size_px, font_size):
+    """
+    <img> that the BROWSER fetches from unavatar.io (no Python HTTP call).
+    onerror JS swaps in the initials div if the image cannot load.
+    """
+    clean   = username.replace('@', '').strip()
+    src     = f"https://unavatar.io/tiktok/{clean}"
+    initial = username.lstrip('@')[0].upper() if len(username) > 1 else 'U'
+    grads   = [
+        "linear-gradient(135deg,#FFD700,#FFA500)",
+        "linear-gradient(135deg,#CFD8DC,#90A4AE)",
+        "linear-gradient(135deg,#D7CCC8,#8D6E63)",
+        "linear-gradient(135deg,#1B3F5E,#37718E)",
+    ]
+    grad = grads[min(rank_index, 3)]
+    fb_style = (
+        f"background:{grad};color:#FFF;width:{size_px}px;height:{size_px}px;"
+        f"border-radius:50%;display:flex;align-items:center;justify-content:center;"
+        f"font-size:{font_size}px;font-weight:800;"
+        f"box-shadow:0 4px 12px rgba(0,0,0,.15);border:2px solid #FFF;"
+    )
+    img_style = (
+        f"width:{size_px}px;height:{size_px}px;object-fit:cover;"
+        f"border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,.15);border:2px solid #FFF;"
+    )
+    onerror = (
+        f"this.style.display='none';"
+        f"var d=document.createElement('div');"
+        f"d.setAttribute('style','{fb_style}');"
+        f"d.textContent='{initial}';"
+        f"this.parentNode.appendChild(d);"
+    )
+    return f'<img src="{src}" style="{img_style}" onerror="{onerror}">'
+
+
+# ── MPKP action card ──────────────────────────────────────────────────────────
+
+def _mpkp_card(title, description, icon_type, color_hex):
     tint = f"{color_hex}15"
-    
-    # SVG icon map (clean vectors instead of emojis)
-    svg_icons = {
-        "star": f'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{color_hex}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>',
-        "gem": f'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{color_hex}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path></svg>',
-        "alert": f'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{color_hex}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
-        "trend": f'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{color_hex}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>',
+    icons = {
+        "star":  f'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{color_hex}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+        "gem":   f'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{color_hex}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>',
+        "alert": f'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{color_hex}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        "trend": f'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{color_hex}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
     }
-    
-    icon_svg = svg_icons.get(icon_type, "")
-    icon_div = f'<div style="background:{tint};width:45px;height:45px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid {color_hex}30;">{icon_svg}</div>' if icon_svg else ""
-    card_html = f"""<div style="background:#FFFFFF;padding:24px;border-radius:16px;border-top:5px solid {color_hex};border:1px solid #B2D8E8;box-shadow:0 10px 30px rgba(0,0,0,0.04);margin-bottom:20px;min-height:160px;display:flex;flex-direction:column;transition:all 0.3s ease;"><div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">{icon_div}<h4 style="margin:0;color:#1B3F5E;font-size:18px;font-weight:800;letter-spacing:-0.02em;">{title}</h4></div><p style="margin:0;color:#37718E;font-size:14.5px;line-height:1.6;font-weight:500;">{description}</p></div>"""
-    st.markdown(card_html, unsafe_allow_html=True)
+    icon_svg = icons.get(icon_type, "")
+    icon_div = (
+        f'<div style="background:{tint};width:45px;height:45px;border-radius:12px;'
+        f'display:flex;align-items:center;justify-content:center;border:1px solid {color_hex}30;">'
+        f'{icon_svg}</div>'
+    ) if icon_svg else ""
+    st.markdown(
+        f'<div style="background:#FFF;padding:24px;border-radius:16px;border-top:5px solid {color_hex};'
+        f'border:1px solid #B2D8E8;box-shadow:0 10px 30px rgba(0,0,0,.04);'
+        f'margin-bottom:20px;min-height:160px;display:flex;flex-direction:column;">'
+        f'<div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">'
+        f'{icon_div}<h4 style="margin:0;color:#1B3F5E;font-size:18px;font-weight:800;">{title}</h4></div>'
+        f'<p style="margin:0;color:#37718E;font-size:14.5px;line-height:1.6;font-weight:500;">{description}</p></div>',
+        unsafe_allow_html=True,
+    )
+
+
+# ── Main render ───────────────────────────────────────────────────────────────
 
 def render(filtered_df, selected_place):
     st.markdown("## Social & Influencers")
     st.markdown("Analytics on user interactions and the content creators driving them.")
     st.markdown("---")
-    
+
     if filtered_df.empty:
         st.warning("No data available to display insights.")
         return
-        
-    df_copy = filtered_df.copy()
-    avg_likes = df_copy['diggCount'].mean()
-    avg_replies = df_copy['replyCommentTotal'].mean()
-    avg_sentiment = df_copy['sentiment_score'].mean()
-    
-    # Theme Colors
-    color_pos = "#00838F" # Teal
-    color_neu = "#F59E0B" # Orange
-    color_neg = "#C2185B" # Magenta
-    color_border = "#B2D8E8" # Theme blue border
-    color_text = "#1B3F5E" # Dark navy text
-    
+
+    avg_likes     = filtered_df['diggCount'].mean()
+    avg_replies   = filtered_df['replyCommentTotal'].mean()
+    avg_sentiment = filtered_df['sentiment_score'].mean()
+
+    CP = "#00838F"   # teal   – positive
+    CN = "#F59E0B"   # amber  – neutral
+    CG = "#C2185B"   # rose   – negative
+    CB = "#B2D8E8"   # border
+    CT = "#1B3F5E"   # text
+
+    # ── Simple Action Plan ────────────────────────────────────────────────────
     st.markdown("### Simple Action Plan")
-    col1, col2 = st.columns(2)
-    
-    with col1:
+    c1, c2 = st.columns(2)
+    with c1:
         if avg_sentiment > 0.7 and avg_likes > 5:
-            render_mpkp_card("Great Tourism Candidate", f"This shop is very popular ({avg_likes:.1f} likes) and people love it. MPKP should use this shop in official tourism videos.", "star", color_pos)
-        elif avg_sentiment > 0.7 and avg_likes <= 5:
-            render_mpkp_card("Hidden Gem Found", f"People love the food here ({avg_sentiment:.2f} score), but not many people know about it yet. MPKP should help promote this shop.", "gem", "#2196F3")
+            _mpkp_card("Great Tourism Candidate", f"Very popular ({avg_likes:.1f} avg likes) and well-loved. MPKP should feature this shop in official tourism videos.", "star", CP)
+        elif avg_sentiment > 0.7:
+            _mpkp_card("Hidden Gem Found", f"High sentiment ({avg_sentiment:.2f}) but low reach. MPKP should help promote this shop.", "gem", "#2196F3")
         else:
-            render_mpkp_card("Needs Better Quality", "Customer rating is low. The shop should fix their food or service before MPKP starts to promote them.", "alert", "#9E9E9E")
+            _mpkp_card("Needs Better Quality", "Low customer rating. The shop should improve before MPKP promotion.", "alert", "#9E9E9E")
+    with c2:
+        if avg_likes > 0 and (avg_replies / avg_likes) > 0.5:
+            _mpkp_card("Viral Complaint Warning", "High comment-to-like ratio. MPKP should check if the shop has service issues.", "alert", CG)
+        else:
+            _mpkp_card("Positive Social Media Growth", "Calm, positive conversation. People are sharing menus and liking videos.", "trend", "#10b981")
 
-    with col2:
-        reply_ratio = avg_replies / avg_likes if avg_likes > 0 else 0
-        if reply_ratio > 0.5:
-            render_mpkp_card("Viral Complaint Warning", f"Many people are arguing or complaining in the comments. MPKP should check if the shop is having service problems.", "alert", color_neg)
-        else:
-            render_mpkp_card("Positive Social Media Growth", "The conversation is calm and positive. People are mostly sharing the menu and liking the videos.", "trend", "#10b981")
-            
-    st.markdown("<hr style='border: 0; border-top: 1px solid #B2D8E8; margin: 30px 0;'>", unsafe_allow_html=True)
-    st.markdown("### Top Contributors")
-    
-    urls = filtered_df['videoWebUrl'].astype(str)
-    usernames = urls.str.extract(r'(@[\w.-]+)')[0].fillna('Unknown')
+    st.markdown("<hr style='border:0;border-top:1px solid #B2D8E8;margin:30px 0;'>", unsafe_allow_html=True)
+
+    # ── Build influencer stats from dataset ───────────────────────────────────
     temp_df = filtered_df.copy()
-    temp_df['username'] = usernames
+    temp_df['username'] = (
+        filtered_df['videoWebUrl'].astype(str)
+        .str.extract(r'(@[\w.-]+)')[0]
+        .fillna('Unknown')
+    )
 
-    influencer_stats = temp_df.groupby('username').agg(
-        total_videos=('text', 'count'),
-        avg_sentiment=('sentiment_score', 'mean'),
-        total_likes=('diggCount', 'sum'),
-        total_replies=('replyCommentTotal', 'sum')
-    ).reset_index()
-    
-    influencer_stats = influencer_stats.sort_values(by='total_likes', ascending=False)
-    valid_influencers = influencer_stats[influencer_stats['username'] != 'Unknown']
-    top_list = valid_influencers.head(3) if not valid_influencers.empty else influencer_stats.head(3)
+    stats = (
+        temp_df.groupby('username')
+        .agg(
+            total_videos=('text', 'count'),
+            avg_sentiment=('sentiment_score', 'mean'),
+            total_likes=('diggCount', 'sum'),
+            total_replies=('replyCommentTotal', 'sum'),
+        )
+        .reset_index()
+        .sort_values('total_likes', ascending=False)
+    )
+    valid = stats[stats['username'] != 'Unknown']
+    top3  = valid.head(3) if not valid.empty else stats.head(3)
 
-    if not top_list.empty:
-        cols = st.columns(min(len(top_list), 3))
-        for i, (idx, row) in enumerate(top_list.iterrows()):
-            rank_str = f"#{i+1}"
-            user = row['username']
-            likes = int(row['total_likes'])
-            videos = int(row['total_videos'])
-            avg_likes = int(likes / videos) if videos > 0 else likes
-            sentiment = row['avg_sentiment']
-            
-            color = color_pos if sentiment >= 0.6 else color_neu if sentiment >= 0.4 else color_neg
-            status = "" if sentiment >= 0.6 else "Balanced View" if sentiment >= 0.4 else "Critical Voice"
-            status_tag = f'<span style="color: {color}; font-weight: 600;">{status}</span>' if status else ''
-            
-            # Fetch TikTok info using the cached helper
-            info = get_tiktok_user_info(user)
-            avatar_html = ""
-            if info.get("success") and info.get("avatar"):
-                import urllib.parse
-                encoded_avatar = urllib.parse.quote(info["avatar"])
-                avatar_html = f'<img src="https://wsrv.nl/?url={encoded_avatar}" style="width:60px;height:60px;object-fit:cover;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,0.15);border:2px solid #FFFFFF;margin: 10px auto 15px auto;display:block;">'
-            else:
-                # Fallback to initials if API fails or rate-limited
-                initial = user.lstrip('@')[0].upper() if len(user) > 1 else 'U'
-                if i == 0:
-                    avatar_bg = "linear-gradient(135deg, #FFD700, #FFA500)" # Gold
-                elif i == 1:
-                    avatar_bg = "linear-gradient(135deg, #CFD8DC, #90A4AE)" # Silver
-                else:
-                    avatar_bg = "linear-gradient(135deg, #D7CCC8, #8D6E63)" # Bronze
-                avatar_html = f'<div style="background: {avatar_bg}; color: #FFFFFF; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; margin: 10px auto 15px auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 2px solid #FFFFFF;">{initial}</div>'
-            rank_badge = f'<div style="margin-bottom: 8px;"><span style="background: {color}15; color: {color}; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Rank {rank_str}</span></div>'
-            
-            # Clean vector SVG for external link (no emojis)
-            ext_link_svg = f'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-left: 5px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>'
-            
+    ext_svg = (
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+        'stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:5px;">'
+        '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
+        '<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+    )
+
+    # ── Top Contributors Leaderboard ──────────────────────────────────────────
+    st.markdown("### Top Contributors")
+    if not top3.empty:
+        cols = st.columns(min(len(top3), 3))
+        for i, (_, row) in enumerate(top3.iterrows()):
+            user   = row['username']
+            likes  = int(row['total_likes'])
+            vids   = int(row['total_videos'])
+            avgl   = int(likes / vids) if vids > 0 else likes
+            sent   = row['avg_sentiment']
+            color  = CP if sent >= 0.6 else CN if sent >= 0.4 else CG
+            status = "Positive" if sent >= 0.6 else "Balanced" if sent >= 0.4 else "Critical"
+
+            av = _avatar_img(user, i, 60, 24)
+            card = (
+                f'<div style="border-top:4px solid {color};border:1px solid {CB};text-align:center;'
+                f'padding:22px;border-radius:16px;background:#FFF;display:flex;flex-direction:column;'
+                f'justify-content:space-between;height:100%;">'
+                # rank badge
+                f'<div style="margin-bottom:8px;">'
+                f'<span style="background:{color}15;color:{color};padding:4px 12px;border-radius:20px;'
+                f'font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;">Rank #{i+1}</span></div>'
+                # avatar
+                f'<div style="margin:8px auto 14px auto;width:{60}px;height:{60}px;">{av}</div>'
+                # username
+                f'<h3 style="margin:0 0 14px 0;color:{CT};font-size:16px;font-weight:700;'
+                f'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{user}</h3>'
+
+                # visit profile button
+                f'<div style="margin-bottom:12px;">'
+                f'<a href="https://www.tiktok.com/{user.strip()}" target="_blank" '
+                f'style="background:{CT};color:white;padding:8px 18px;border-radius:20px;font-size:12px;'
+                f'font-weight:600;text-decoration:none;display:inline-flex;align-items:center;'
+                f'box-shadow:0 2px 8px rgba(27,63,94,.25);">Visit Profile {ext_svg}</a></div>'
+                # footer
+                f'<div style="display:flex;justify-content:space-between;font-size:13px;'
+                f'padding-top:10px;border-top:1px solid #F1F5F9;">'
+                f'<span style="color:#64748B;font-weight:600;"><strong>{vids}</strong> Videos</span>'
+                f'<span style="color:{color};font-weight:600;">{status}</span></div>'
+                f'</div>'
+            )
             with cols[i]:
-                card_html = f"""<div class="custom-card" style="border-top: 4px solid {color}; border: 1px solid {color_border}; text-align: center; padding: 22px; border-radius: 16px; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-<div>
-{rank_badge}
-{avatar_html}
-<h3 style="margin-top: 0; margin-bottom: 15px; color: {color_text}; font-size: 17px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{user}</h3>
-<div style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px; border-radius: 12px; margin-bottom: 15px;">
-<p style="margin: 0; font-size: 26px; font-weight: 800; color: #1B3F5E; letter-spacing: -0.5px;">{avg_likes:,}</p>
-<p style="margin: 0; font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Avg Likes / Video</p>
-</div>
-</div>
-<div>
-<div style="margin-bottom: 15px;">
-<a href="https://www.tiktok.com/{user.strip()}" target="_blank" style="background:#1B3F5E; color:white; padding:8px 18px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; box-shadow:0 2px 8px rgba(27,63,94,0.25);">Visit Profile {ext_link_svg}</a>
-</div>
-<div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding-top: 12px; border-top: 1px solid #F1F5F9;">
-<span style="color: #64748B; font-weight: 600;"><strong>{videos}</strong> Videos</span>
-{status_tag}
-</div>
-</div>
-</div>"""
-                st.markdown(card_html, unsafe_allow_html=True)
+                st.markdown(card, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    # ── Deep-Dive by Influencer ───────────────────────────────────────────────
     st.markdown("### Deep-Dive by Influencer")
-    
-    influencer_options = ["All Influencers"] + valid_influencers['username'].tolist()
-    selected_influencer = st.selectbox("Select an influencer:", options=influencer_options)
-    
-    if selected_influencer == "All Influencers":
-        fig = px.bar(valid_influencers.head(15), x='username', y='total_likes', color='avg_sentiment', color_continuous_scale=[color_neg, color_neu, color_pos], labels={'total_likes': 'Total Likes', 'username': 'Influencer'})
-        fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', margin=dict(t=20, b=0, l=0, r=0))
+    options  = ["All Influencers"] + valid['username'].tolist()
+    selected = st.selectbox("Select an influencer:", options=options)
+
+    if selected == "All Influencers":
+        fig = px.bar(
+            valid.head(15), x='username', y='total_likes',
+            color='avg_sentiment',
+            color_continuous_scale=[CG, CN, CP],
+            labels={'total_likes': 'Total Likes', 'username': 'Influencer'},
+        )
+        fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)',
+                          margin=dict(t=20, b=0, l=0, r=0))
         st.plotly_chart(fig, use_container_width=True)
+
     else:
-        inf_df = temp_df[temp_df['username'] == selected_influencer]
-        inf_stats = influencer_stats[influencer_stats['username'] == selected_influencer]
-        avg_sent = float(inf_stats['avg_sentiment'].iloc[0]) if not inf_stats.empty else 0
-        sentiment_label = "" if avg_sent >= 0.6 else "Balanced View" if avg_sent >= 0.4 else "Critical Voice"
-        sentiment_color = color_pos if avg_sent >= 0.6 else color_neu if avg_sent >= 0.4 else color_neg
+        inf_df    = temp_df[temp_df['username'] == selected]
+        inf_stats = stats[stats['username'] == selected]
 
-        info = get_tiktok_user_info(selected_influencer)
-        if info.get("success"):
-            avatar_url = info.get("avatar")
-            nickname = info.get("nickname")
-            is_verified = info.get("verified")
-            bio = info.get("bio")
-            followers = info.get("followers")
-            total_vid = info.get("videos")
-            total_likes = info.get("likes")
-        else:
-            avatar_url, followers, total_vid, total_likes, nickname, is_verified, bio = None, "Unknown", "Unknown", "Unknown", "", False, ""
-        import urllib.parse
-        encoded_avatar = urllib.parse.quote(avatar_url) if avatar_url else None
-        avatar_img = f'<img src="https://wsrv.nl/?url={encoded_avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.15);">' if encoded_avatar else '<div style="width:100%;height:100%;border-radius:50%;background:#1B3F5E;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;color:white;">USER</div>'
-        
-        safe_bio = ""
-        if bio:
-            b = bio[:150].replace('&','&amp;').replace('<','&lt;').replace('>','&gt;').replace('"','&quot;').replace("'", "&#39;").replace('\n','<br>')
-            safe_bio = f'<p style="margin-top:15px;font-size:15px;color:#475569;font-style:italic;line-height:1.5;">"{b}{"..." if len(bio)>150 else ""}"</p>'
+        # Local dataset stats (always available)
+        tot_vids  = int(inf_stats['total_videos'].iloc[0])  if not inf_stats.empty else 0
+        tot_likes = int(inf_stats['total_likes'].iloc[0])   if not inf_stats.empty else 0
+        tot_repl  = int(inf_stats['total_replies'].iloc[0]) if not inf_stats.empty else 0
+        avg_lk    = int(tot_likes / tot_vids) if tot_vids > 0 else 0
+        avg_sent  = float(inf_stats['avg_sentiment'].iloc[0]) if not inf_stats.empty else 0
 
-        label_html = f'<span style="background:{sentiment_color}15;padding:6px 14px;border-radius:20px;color:{sentiment_color};font-weight:600;border:1px solid {sentiment_color}30;font-size:13px;">{sentiment_label}</span>' if sentiment_label else ""
-        verified_html = f' <span title="Verified" style="background:#20d5ec;color:white;font-size:12px;padding:3px 10px;border-radius:12px;vertical-align:middle;font-weight:bold;margin-left:8px;">VERIFIED</span>' if is_verified else ""
+        sent_label = "Positive" if avg_sent >= 0.6 else "Balanced View" if avg_sent >= 0.4 else "Critical Voice"
+        sent_color = CP if avg_sent >= 0.6 else CN if avg_sent >= 0.4 else CG
+        sent_pct   = int(avg_sent * 100)
 
-        profile_html = f"""<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:30px;align-items:stretch;"><div style="flex:1;min-width:250px;display:flex;flex-direction:column;gap:20px;"><div style="background:#FFFFFF;border-radius:16px;border:1px solid {color_border};padding:30px 20px;box-shadow:0 8px 30px rgba(0,0,0,0.04);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:1;"><div style="width:110px;height:110px;margin-bottom:15px;">{avatar_img}</div><h2 style="margin:0;color:{color_text};font-size:30px;font-weight:800;letter-spacing:-0.5px;display:flex;align-items:center;justify-content:center;">{nickname if nickname else selected_influencer}{verified_html}</h2><p style="margin:5px 0 15px 0;color:#64748b;font-size:17px;font-weight:600;">{selected_influencer}</p>{label_html}{safe_bio}</div><a href="https://www.tiktok.com/{selected_influencer.strip()}" target="_blank" style="background:#1B3F5E;color:white;border-radius:16px;padding:16px;text-decoration:none;font-weight:600;font-size:15px;display:flex;justify-content:center;align-items:center;gap:10px;box-shadow:0 4px 15px rgba(0,0,0,0.2);">View TikTok Profile</a></div><div style="flex:2;min-width:300px;display:flex;flex-direction:column;gap:20px;"><div style="background:#FFFFFF;border-radius:16px;border:1px solid {color_border};padding:25px;box-shadow:0 8px 30px rgba(0,0,0,0.04);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;"><div style="font-size:38px;font-weight:800;color:{color_text};">{followers}</div><div style="font-size:13px;color:#64748b;font-weight:600;text-transform:uppercase;">Total Followers</div></div><div style="display:flex;gap:20px;flex:1;"><div style="background:#FFFFFF;border-radius:16px;border:1px solid {color_border};padding:20px;box-shadow:0 8px 30px rgba(0,0,0,0.04);flex:1;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:28px;font-weight:800;color:{color_text};">{total_vid}</div><div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;">Total Videos</div></div><div style="background:#FFFFFF;border-radius:16px;border:1px solid {color_border};padding:20px;box-shadow:0 8px 30px rgba(0,0,0,0.04);flex:1;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:28px;font-weight:800;color:{color_text};">{total_likes}</div><div style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;">Total Likes</div></div></div></div></div>"""
+        rank_pos = valid['username'].tolist().index(selected) if selected in valid['username'].tolist() else 3
+
+        # Profile picture — browser fetches, no Python HTTP
+        av_large = _avatar_img(selected, rank_pos, 110, 44)
+
+        label_html = (
+            f'<span style="background:{sent_color}15;padding:6px 14px;border-radius:20px;'
+            f'color:{sent_color};font-weight:600;border:1px solid {sent_color}30;font-size:13px;">'
+            f'{sent_label}</span>'
+        )
+        sent_bar = (
+            f'<div style="margin-top:14px;text-align:left;width:100%;">'
+            f'<div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;font-weight:600;margin-bottom:5px;">'
+            f'<span>Sentiment Score</span>'
+            f'<span style="color:{sent_color};font-weight:700;">{avg_sent:.2f}</span></div>'
+            f'<div style="background:#F1F5F9;border-radius:99px;height:8px;overflow:hidden;">'
+            f'<div style="background:{sent_color};width:{sent_pct}%;height:100%;border-radius:99px;"></div>'
+            f'</div></div>'
+        )
+        ext_lg = (
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+            'stroke-width="3" stroke-linecap="round" stroke-linejoin="round">'
+            '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'
+            '<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+        )
+
+        # ── Profile card ──────────────────────────────────────────────────────
+        # Note: Followers / TikTok total likes are from TikTok's servers — shown
+        # via the profile link. Local dataset stats are always shown below.
+        profile_html = (
+            f'<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:30px;align-items:stretch;">'
+
+            # ── Left: avatar card + link ──────────────────────────────────────
+            f'<div style="flex:1;min-width:240px;display:flex;flex-direction:column;gap:16px;">'
+            f'<div style="background:#FFF;border-radius:16px;border:1px solid {CB};padding:28px 20px;'
+            f'box-shadow:0 8px 30px rgba(0,0,0,.04);display:flex;flex-direction:column;'
+            f'align-items:center;justify-content:center;text-align:center;flex:1;">'
+            f'<div style="margin-bottom:16px;width:110px;height:110px;">{av_large}</div>'
+            f'<h2 style="margin:0 0 4px 0;color:{CT};font-size:22px;font-weight:800;letter-spacing:-.5px;">{selected}</h2>'
+            f'<p style="margin:0 0 12px 0;color:#94a3b8;font-size:13px;font-weight:500;">TikTok Creator</p>'
+            f'{label_html}{sent_bar}'
+            f'</div>'
+            f'<a href="https://www.tiktok.com/{selected.strip()}" target="_blank" '
+            f'style="background:{CT};color:white;border-radius:16px;padding:15px;text-decoration:none;'
+            f'font-weight:600;font-size:14px;display:flex;justify-content:center;align-items:center;'
+            f'gap:10px;box-shadow:0 4px 15px rgba(0,0,0,.2);">View TikTok Profile {ext_lg}</a>'
+            f'</div>'
+
+            # ── Right: stats (pure flexbox rows) ─────────────────────────────
+            f'<div style="flex:2;min-width:300px;display:flex;flex-direction:column;gap:16px;">'
+
+            # Row A: dataset total likes (hero, full-width)
+            f'<div style="background:#FFF;border-radius:16px;border:1px solid {CB};padding:24px;'
+            f'box-shadow:0 8px 30px rgba(0,0,0,.04);text-align:center;'
+            f'display:flex;flex-direction:column;align-items:center;justify-content:center;">'
+            f'<div style="font-size:42px;font-weight:800;color:{CT};letter-spacing:-1px;">{tot_likes:,}</div>'
+            f'<div style="font-size:12px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-top:4px;">Total Likes on Dataset</div>'
+            f'</div>'
+
+            # Row B: Videos | Avg Likes/Video (side by side)
+            f'<div style="display:flex;gap:16px;">'
+
+            f'<div style="background:#FFF;border-radius:16px;border:1px solid {CB};padding:20px;'
+            f'box-shadow:0 8px 30px rgba(0,0,0,.04);flex:1;text-align:center;'
+            f'display:flex;flex-direction:column;align-items:center;justify-content:center;">'
+            f'<div style="font-size:30px;font-weight:800;color:{CT};">{tot_vids}</div>'
+            f'<div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-top:4px;">Videos</div>'
+            f'</div>'
+
+            f'<div style="background:#FFF;border-radius:16px;border:1px solid {CB};padding:20px;'
+            f'box-shadow:0 8px 30px rgba(0,0,0,.04);flex:1;text-align:center;'
+            f'display:flex;flex-direction:column;align-items:center;justify-content:center;">'
+            f'<div style="font-size:30px;font-weight:800;color:{CT};">{avg_lk:,}</div>'
+            f'<div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-top:4px;">Avg Likes / Video</div>'
+            f'</div>'
+
+            f'</div>'  # end row B
+
+            # Row C: Total Comments (full-width)
+            f'<div style="background:#FFF;border-radius:16px;border:1px solid {CB};padding:20px;'
+            f'box-shadow:0 8px 30px rgba(0,0,0,.04);text-align:center;'
+            f'display:flex;flex-direction:column;align-items:center;justify-content:center;">'
+            f'<div style="font-size:30px;font-weight:800;color:{CT};">{tot_repl:,}</div>'
+            f'<div style="font-size:11px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-top:4px;">Total Comments</div>'
+            f'</div>'
+
+            f'</div>'  # end right column
+            f'</div>'  # end outer flex
+        )
         st.markdown(profile_html, unsafe_allow_html=True)
 
+        # ── Sample Comments ───────────────────────────────────────────────────
         if not inf_df.empty:
+            st.markdown("#### Sample Comments")
             feedbacks = [r for _, r in inf_df.head(3).iterrows()]
-            cols = st.columns(3)
+            ccols = st.columns(min(len(feedbacks), 3))
             for j, row in enumerate(feedbacks):
-                p, d, s, t, v = str(row.get('place','')), str(row.get('createTimeISO','')), str(row.get('sentiment','')).upper(), str(row.get('text','')), str(row.get('videoWebUrl','#'))
-                c = color_pos if s=="POSITIVE" else color_neg if s=="NEGATIVE" else color_neu
-                card = f"""<div style="background:#FFFFFF;border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,0.04);border:1px solid {color_border};border-left:6px solid {c};display:flex;flex-direction:column;min-height:250px;height:100%;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px;flex-wrap:wrap;gap:10px;"><div style="font-size:11px;font-weight:800;color:{c};background:{c}15;padding:4px 10px;border-radius:20px;border:1px solid {c}30;letter-spacing:0.5px;">{s}</div><div style="font-size:12px;color:#64748b;font-weight:600;display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><span>{p}</span><span>{d}</span></div></div><div style="font-size:15px;color:{color_text};margin-bottom:20px;line-height:1.5;font-weight:500;font-style:italic;flex-grow:1;">"{t}"</div><div style="display:flex;justify-content:center;margin-top:auto;"><a href="{v}" target="_blank" style="font-size:13px;background:#1B3F5E;color:white;padding:10px 0;width:100%;text-align:center;border-radius:8px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 15px rgba(0,0,0,0.15);">Watch Video</a></div></div>"""
-                with cols[j]: st.markdown(card, unsafe_allow_html=True)
+                p = str(row.get('place', ''))
+                d = str(row.get('createTimeISO', ''))
+                s = str(row.get('sentiment', '')).upper()
+                t = str(row.get('text', ''))
+                v = str(row.get('videoWebUrl', '#'))
+                c = CP if s == "POSITIVE" else CG if s == "NEGATIVE" else CN
+                card = (
+                    f'<div style="background:#FFF;border-radius:14px;padding:20px;margin-bottom:20px;'
+                    f'box-shadow:0 4px 20px rgba(0,0,0,.04);border:1px solid {CB};border-left:6px solid {c};'
+                    f'display:flex;flex-direction:column;min-height:250px;height:100%;">'
+                    f'<div style="display:flex;justify-content:space-between;align-items:flex-start;'
+                    f'margin-bottom:14px;flex-wrap:wrap;gap:8px;">'
+                    f'<div style="font-size:11px;font-weight:800;color:{c};background:{c}15;'
+                    f'padding:4px 10px;border-radius:20px;border:1px solid {c}30;letter-spacing:.5px;">{s}</div>'
+                    f'<div style="font-size:12px;color:#64748b;font-weight:600;display:flex;flex-direction:column;'
+                    f'align-items:flex-end;gap:3px;"><span>{p}</span><span>{d}</span></div></div>'
+                    f'<div style="font-size:15px;color:{CT};margin-bottom:18px;line-height:1.5;'
+                    f'font-weight:500;font-style:italic;flex-grow:1;">"{t}"</div>'
+                    f'<div style="display:flex;justify-content:center;margin-top:auto;">'
+                    f'<a href="{v}" target="_blank" style="font-size:13px;background:{CT};color:white;'
+                    f'padding:10px 0;width:100%;text-align:center;border-radius:8px;text-decoration:none;'
+                    f'font-weight:600;display:inline-flex;align-items:center;justify-content:center;'
+                    f'gap:8px;box-shadow:0 4px 15px rgba(0,0,0,.15);">Watch Video</a>'
+                    f'</div></div>'
+                )
+                with ccols[j]:
+                    st.markdown(card, unsafe_allow_html=True)

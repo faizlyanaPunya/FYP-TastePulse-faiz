@@ -12,7 +12,7 @@ import numpy as np
 # look up the coordinates on Google Maps and add them here.
 EXACT_COORDINATES = {
     "Dusun Riffa Changlun": {"lat": 6.424054930383064, "lon": 100.47291850886107},
-    "PotLepak Changlun": {"lat": 6.436173595802827, "lon": 100.42163062485562},
+    "Potlepak Changlun": {"lat": 6.436326334208879, "lon": 100.42158038040941},
     "Cikjah Nasi Ayam Bakaq, Changlun": {"lat": 6.436961139990423, "lon":  100.44359789536735},
     "Dapoq Mak Kami, D' Dusun Papa, Bukit Wang, Jitra, Kedah": {"lat": 6.314010358529254, "lon":100.47696455521691},    
     "Nasi Lemak Kg Darat": {"lat": 6.446732304525118, "lon": 100.48223046837995},   

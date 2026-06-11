@@ -90,7 +90,7 @@ def _summarise_data(df: pd.DataFrame) -> dict:
 
 
 # ── Gemini call helper ─────────────────────────────────────────────────────────
-_MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]
+_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"]
 
 def _call_gemini(client, prompt: str) -> str:
     last_err = None
@@ -104,8 +104,8 @@ def _call_gemini(client, prompt: str) -> str:
         except Exception as e:
             last_err = e
             err = str(e).upper()
-            # Try the next model if we hit rate limits (429) or high demand / service unavailable (503)
-            if any(code in err for code in ["429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "OVERLOAD"]):
+            # Try the next model if we hit rate limits, overload, unavailability, or model not found (404)
+            if any(code in err for code in ["429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "OVERLOAD", "404", "NOT_FOUND"]):
                 continue  # try next model
             return f"⚠️ Gemini error: {e}"
     return f"⚠️ All Gemini models are currently busy or unavailable. Last error: {last_err}"

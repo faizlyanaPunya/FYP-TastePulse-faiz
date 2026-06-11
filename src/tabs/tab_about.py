@@ -11,66 +11,154 @@ def render(model_results):
     st.markdown("### About TastePulse")
     st.info("**TastePulse** is an interactive Sentiment Analysis dashboard designed to uncover insights driving Northern Malaysia's food tourism. By analyzing public opinion, it helps identify dining trends, assess customer satisfaction, and recommend strategic initiatives.")
     
+    # Helper function to render a unified horizontal card
+    import base64
+    def render_team_member(image_path, role_class, role_name, name, details_html):
+        if os.path.exists(image_path):
+            with open(image_path, 'rb') as f:
+                img_b64 = base64.b64encode(f.read()).decode()
+            ext = image_path.split('.')[-1]
+            if ext.lower() == 'jpg': ext = 'jpeg'
+            img_html = f'<img src="data:image/{ext};base64,{img_b64}" class="profile-img">'
+        else:
+            img_html = '<div class="profile-img empty-img">(No Image)</div>'
+
+        # It is critical not to indent the HTML, otherwise Markdown treats it as a code block!
+        card_html = f"""<div class="unified-card">
+{img_html}
+<div class="unified-details">
+<div><span class="role-badge {role_class}">{role_name}</span></div>
+<div class="team-name">{name}</div>
+<div class="details-divider">
+{details_html}
+</div>
+</div>
+</div>"""
+
+        st.markdown(card_html, unsafe_allow_html=True)
+
     # Project Team Details
     st.markdown("### Project Team")
     import os
-    col1, col2 = st.columns(2)
+    
+    st.markdown("""
+    <style>
+    .unified-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 15px rgba(27, 63, 94, 0.06);
+        border: 1px solid #E8F4F8;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+    }
+    .unified-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(27, 63, 94, 0.12);
+        border-color: #B2D8E8;
+    }
+    .profile-img {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #E8F4F8;
+        box-shadow: 0 4px 12px rgba(27, 63, 94, 0.1);
+        flex-shrink: 0;
+    }
+    .empty-img {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #F8FAFC;
+        color: #94A3B8;
+        font-size: 14px;
+    }
+    .unified-details {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .role-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+    }
+    .role-supervisee { background: #E8F4F8; color: #00838F; }
+    .role-supervisor { background: #E8F5E9; color: #2E7D32; }
+    .role-peer1 { background: #FFF3E0; color: #EF6C00; }
+    .role-peer2 { background: #F3E5F5; color: #7B1FA2; }
+    
+    .team-name {
+        font-size: 20px;
+        font-weight: 800;
+        color: #1B3F5E;
+        margin-bottom: 16px;
+        line-height: 1.4;
+    }
+    .details-divider {
+        border-top: 1px dashed #CFD8DC;
+        padding-top: 16px;
+    }
+    .team-detail {
+        font-size: 15px;
+        color: #546E7A;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .team-detail strong {
+        color: #37474F;
+        min-width: 90px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-    with col1:
-        st.markdown("#### Supervisee")
-        if os.path.exists("faiz.jpeg"):
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c2:
-                st.image("faiz.jpeg", width=160)
-        else:
-            st.write("*(Pic)*")
-        st.info("**Name:** Nur Faizlyana Binti Mohd Kamarul Ariffin\n\n**Matric No:** 300442 \n\n**Program:** Bachelor of Computer Science with hons.")
+    render_team_member(
+        "faiz.jpeg", 
+        "role-supervisee", 
+        "Supervisee", 
+        "Nur Faizlyana Binti Mohd Kamarul Ariffin", 
+        """<div class="team-detail"><strong>Matric No:</strong> 300442</div>
+<div class="team-detail"><strong>Program:</strong> Bachelor of Computer Science with hons.</div>"""
+    )
 
-    with col2:
-        st.markdown("#### Supervisor")
-        if os.path.exists("juhaida.jpeg"):
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c2:
-                st.image("juhaida.jpeg", width=170)
-        else:
-            st.write("*(Pic)*")
-        st.success("**Name:** Assoc. Prof. Ts. Dr. Juhaida Binti Abu Bakar\n\n**Institution:** Universiti Utara Malaysia (UUM)")
+    render_team_member(
+        "juhaida.jpeg", 
+        "role-supervisor", 
+        "Supervisor", 
+        "Assoc. Prof. Ts. Dr. Juhaida Binti Abu Bakar", 
+        """<div class="team-detail"><strong>Institution:</strong> Universiti Utara Malaysia (UUM)</div>"""
+    )
 
-    st.markdown("---")
-    st.markdown("#### Peer Dashboards")
-    col3, col4 = st.columns(2)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### Peer Dashboards")
 
-    with col3:
-        st.markdown("##### TastePulse Dashboard")
-        if os.path.exists("najaa.jpg"):
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c2:
-                st.image("najaa.jpg", width=185)
-        else:
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c2:
-                st.write("*(Pic)*")
-        st.warning(
-            "**Name:** Nur Najaa Aini Binti Mohd Puzi\n\n"
-            "**Project:** TastePulse Dashboard\n\n"
-            "**Sentiment Analysis of Food Tourism in Northern Community**."
-        )
+    render_team_member(
+        "najaa.jpg", 
+        "role-peer1", 
+        "TastePulse Dashboard", 
+        "Nur Najaa Aini Binti Mohd Puzi", 
+        """<div class="team-detail"><strong>Project:</strong> Sentiment Analysis of Food Tourism in Northern Community</div>"""
+    )
 
-    with col4:
-        st.markdown("##### ThemePulse Dashboard")
-        if os.path.exists("mak.jpeg"):
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c2:
-                st.image("mak.jpeg", width=160)
-        else:
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c2:
-                st.write("*(Pic)*")
-        st.info(
-            "**Name:** Mak Shei Wen\n\n"
-            "**Project:** ThemePulse Dashboard\n\n"
-            "**Topic Modeling of Food Tourism in Northern Community**"
-        )
+    render_team_member(
+        "mak.jpeg", 
+        "role-peer2", 
+        "ThemePulse Dashboard", 
+        "Mak Shei Wen", 
+        """<div class="team-detail"><strong>Project:</strong> Topic Modeling of Food Tourism in Northern Community</div>"""
+    )
         
     st.markdown("---")
     
@@ -419,7 +507,7 @@ def render(model_results):
                 # Pick a color based on performance (Teal for good, Navy for okay, Pink for critical)
                 score_color = "#00838F" if value >= 0.70 else "#265E7E" if value >= 0.60 else "#C2185B"
                 
-                scores_html += f"""<div style="margin-bottom: 10px; padding: 12px; background: #F8FAFC; border-radius: 10px; border: 1px solid #B2D8E8; text-align: left;">
+                scores_html += f"""<div style="margin-bottom: 10px; padding: 12px; background: #F8FAFC; border-radius: 10px; border: 1px solid #B2D8E8; text-align: center;">
 <div style="font-size: 11px; font-weight: 700; color: #37718E; text-transform: uppercase; letter-spacing: 0.5px;">{model_name}</div>
 <div style="font-size: 26px; font-weight: 800; color: {score_color}; margin-top: 2px; letter-spacing: -0.5px;">{value:.3f}</div>
 </div>"""

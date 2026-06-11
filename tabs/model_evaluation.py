@@ -48,7 +48,7 @@ def render(model_results):
                 # Pick a color based on performance (Teal for good, Navy for okay, Pink for critical)
                 score_color = "#00838F" if value >= 0.70 else "#265E7E" if value >= 0.60 else "#C2185B"
                 
-                scores_html += f"""<div style="margin-bottom: 10px; padding: 12px; background: #F8FAFC; border-radius: 10px; border: 1px solid #B2D8E8; text-align: left;">
+                scores_html += f"""<div style="margin-bottom: 10px; padding: 12px; background: #F8FAFC; border-radius: 10px; border: 1px solid #B2D8E8; text-align: center;">
 <div style="font-size: 11px; font-weight: 700; color: #37718E; text-transform: uppercase; letter-spacing: 0.5px;">{model_name}</div>
 <div style="font-size: 26px; font-weight: 800; color: {score_color}; margin-top: 2px; letter-spacing: -0.5px;">{value:.3f}</div>
 </div>"""
