@@ -148,7 +148,6 @@ def render(df, selected_place):
         
         # Sentiment Metrics
         health = calculate_sentiment_health_score(place_df)
-        infra = calculate_aspect_score(place_df, INFRA_KEYWORDS)
         
         # Determine Color Category based on Sentiment
         score_val = health
@@ -173,7 +172,6 @@ def render(df, selected_place):
             "ActualScore": score_val,
             "Total Reviews": len(place_df),
             "Top Praise": pos_str,
-            "Infra Score": f"{infra:.1f}%" if infra is not None else "N/A"
         })
         
     map_df = pd.DataFrame(map_data)
@@ -250,7 +248,6 @@ def render(df, selected_place):
             <h4 style="margin-top: 0; margin-bottom: 10px; color: #0f172a; font-size: 17px; font-weight: 900; letter-spacing: 0.5px;">{row["Place"]}</h4>
             <div style="margin-bottom: 5px; font-size: 13px;"><b>Status:</b> <span style="color: {status_color}; font-weight: bold;">{row["Status"]}</span></div>
             <div style="margin-bottom: 5px; font-size: 13px;"><b>Score:</b> {row["Score"]}</div>
-            <div style="margin-bottom: 5px; font-size: 13px;"><b>Infra Score:</b> {row["Infra Score"]}</div>
             <div style="margin-bottom: 5px; font-size: 13px;"><b>Reviews:</b> {row["Total Reviews"]}</div>
             <div style="margin-top: 8px; font-size: 12px; color: #666; background: #f9f9f9; padding: 6px; border-radius: 4px;"><b>Top Praise:</b><br>{top_praise_str}</div>
             <div style="display: flex; flex-direction: column; gap: 2px;">
