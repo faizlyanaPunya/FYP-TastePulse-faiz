@@ -53,34 +53,15 @@ selected_place, date_range = render_sidebar()
 
 # Check if data is available (either uploaded or from training)
 if st.session_state.get('test_df') is None:
-    st.info("👈 **Please upload a CSV dataset in the left sidebar to get started!**")
-    
-    # Visual Onboarding Guide
+    st.info("**Please upload a CSV file and train models to get started**")
     st.markdown("""
-    ### 🚀 Quick Start Guide
+    ### How to use this dashboard:
+    1. **Upload your dataset** in the sidebar (CSV file with columns: `text`, `sentiment`, `sentiment score`, `place` , `bigrams` )
+    2. **Select models** to train (Multinomial Naive Bayes and/or LSTM)
+    3. **Click 'Train Models'** to train and generate insights
+    4. **Explore the tabs** to view sentiment analysis results
     
-    To begin exploring the sentiment analysis insights:
-    
-    1. **Locate the Left Sidebar:** 
-       * If you are on a mobile device or the sidebar is hidden, click the **`>`** arrow in the top-left corner of the screen to open it.
-    2. **Upload the Dataset:**
-       * In the sidebar, drag and drop or upload your CSV dataset file.
-       * *Don't have a dataset?* You can download our sample dataset here:
-         👉 [**Download Sample Dataset (Sentiment_Food_Data.csv)**](https://raw.githubusercontent.com/faizlyanaPunya/FYP-TastePulse-faiz/main/Sentiment_Food_Data.csv)
-    3. **Select & Train Models:**
-       * Choose the models you'd like to train (e.g., *Multinomial Naive Bayes* and/or *LSTM*).
-       * Click the **"Train Models"** button.
-    4. **Explore Insights:**
-       * Once loaded, navigate through the tabs above to explore reviews, geographical maps, influencer reach, and AI-powered operational advisories!
-    
-    ---
-    ### 📋 Dataset Column Requirements
-    Your uploaded CSV must contain these columns:
-    * `text` (Review content)
-    * `sentiment` (`positive`, `negative`, or `neutral`)
-    * `sentiment score` (Decimal value)
-    * `place` (Restaurant or location name)
-    * `bigrams` (Extracted key phrases)
+    > The dashboard will use the test data (20% split) for all insights and visualizations.
     """)
     st.stop()
 
