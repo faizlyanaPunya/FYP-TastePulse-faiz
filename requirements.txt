@@ -9,3 +9,6 @@ matplotlib
 pillow
 google-genai
 python-docx
+folium
+streamlit-folium
+
